@@ -123,7 +123,7 @@ qq{Usage: $0 [options] [--] [user@]host [command...]
 
         --local              run mosh-server locally without using ssh
 
-        --experimental-remote-ip=(local|remote|proxy)  select the method for
+        --experimental-remote-ip=(local|remote|proxy|curl)  select the method for
                              discovering the remote IP address to use for mosh
                              (default: "proxy")
 
@@ -191,7 +191,7 @@ if ( defined $predict ) {
   predict_check( $predict, 0 );
 }
 
-if ( not grep { $_ eq $use_remote_ip } qw { local remote proxy } ) {
+if ( not grep { $_ eq $use_remote_ip } qw { local remote proxy curl } ) {
   die "Unknown parameter $use_remote_ip";
 }
 
@@ -367,6 +367,15 @@ if ( $pid == 0 ) { # child
       shell_quote ( '[ -n "$SSH_CONNECTION" ] && printf "\nMOSH SSH_CONNECTION %s\n" "$SSH_CONNECTION"' ) .
       " ; ";
     # Only with 'remote', we may need to tell SSH which protocol to use.
+    if ( $family eq 'inet' ) {
+      push @sshopts, '-4';
+    } elsif ( $family eq 'inet6' ) {
+      push @sshopts, '-6';
+    }
+  }
+  if( $use_remote_ip eq 'curl' ) {
+    $ssh_connection = "sh -c " .
+      shell_quote( 'echo MOSH SSH_CONNECTION 1 2 $(curl https://ipinfo.io/ip) 4;');
     if ( $family eq 'inet' ) {
       push @sshopts, '-4';
     } elsif ( $family eq 'inet6' ) {
