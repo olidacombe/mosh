@@ -375,7 +375,7 @@ if ( $pid == 0 ) { # child
   }
   if( $use_remote_ip eq 'curl' ) {
     $ssh_connection = "sh -c " .
-      shell_quote( 'echo MOSH SSH_CONNECTION 1 2 $(curl https://ipinfo.io/ip) 4;');
+      shell_quote( 'echo MOSH SSH_CONNECTION 1 2 $(curl -s https://ipinfo.io/ip) 4;');
     if ( $family eq 'inet' ) {
       push @sshopts, '-4';
     } elsif ( $family eq 'inet6' ) {
